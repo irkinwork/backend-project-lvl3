@@ -31,6 +31,7 @@
   "homepage": "https://github.com/irkinwork/backend-project-lvl3#readme",
   "dependencies": {
     "axios": "^0.19.2",
+    "commander": "^4.1.1",
     "lodash": "^4.17.15",
     "nock": "^12.0.2"
   },
