@@ -1,7 +1,7 @@
 install:
 	npm i
 run:
-	npx babel-node 'src/bin/page-loader.js' https://ru.hexlet.io/blog/posts/vyshel-laravel-7
+	npx babel-node 'src/bin/page-loader.js' --output __fixtures__ https://jestjs.io/docs/en/expect
 publish:
 	npm publish --dry-run
 publink:

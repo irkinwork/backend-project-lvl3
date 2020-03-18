@@ -1,9 +1,11 @@
 import url from 'url';
 
 export default (href) => {
-  const { path, host } = url.parse(href);
-  const filename = [host, path]
+  const { host, path } = url.parse(href);
+  const baseName = [host, path]
     .join('')
     .replace(/[^\w]/g, '_');
-  return `${filename}.html`;
+  const filename = `${baseName}.html`;
+  const dirname = `${baseName}_files`;
+  return {filename, dirname};
 };
