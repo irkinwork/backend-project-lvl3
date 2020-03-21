@@ -1,6 +1,6 @@
 import cheerio from 'cheerio';
 import { flatten, isNil } from 'lodash';
-import url from 'url';
+import { parse as parseUrl } from 'url';
 import path from 'path';
 
 export const isUrlLocal = (url, base) => {
@@ -10,8 +10,8 @@ export const isUrlLocal = (url, base) => {
 };
 
 export const buildFileName = (href) => {
-  const { host, path } = url.parse(href);
-  const baseName = [host, path]
+  const { host, path: hrefPath } = parseUrl(href);
+  const baseName = [host, hrefPath]
     .join('')
     .replace(/[^\w]/g, '_');
   const filename = `${baseName}.html`;
@@ -43,8 +43,8 @@ export const getAllLocalResources = (data, link) => {
 
 export const replaceWithLocalUrls = (data, dirPath, url) => {
   const $ = cheerio.load(data);
-  Object.keys(tags).map((tag) => {
-    $(tag).map((i, item) => {
+  Object.keys(tags).forEach((tag) => {
+    $(tag).each((i, item) => {
       const link = $(item).attr(tags[tag]);
       if (link && isUrlLocal(link, url)) {
         const { origin } = new URL(url);
