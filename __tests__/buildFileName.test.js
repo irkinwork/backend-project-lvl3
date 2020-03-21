@@ -1,4 +1,4 @@
-import buildFileName from '../src/utils/buildFileName';
+import {buildFileName} from '../src/utils';
 
 test('should build filename and dirname from href 1', () => {
   const href = 'https://ru.hexlet.io/blog/posts/vyshel-laravel-7';
