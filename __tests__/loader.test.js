@@ -88,5 +88,25 @@ describe('jestjs_io_docs_en_expect', () => {
     await expect(loadPage('/root', link)).rejects.toThrow('EACCES');
   });
 
+  test('page-loader should fail and show 400 error', async () => {
+    const link = 'https://jestjs.io/docs/en/expec';
+    const urlPath = '/docs/en/expec';
+    nock(/jestjs.io/)
+        .log(console.log)
+        .get(urlPath)
+        .reply(404, [])
+
+    await expect(loadPage(dirpath, link)).rejects.toThrow('404');
+  });
+
+  test('page-loader should fail and show 500 error', async () => {
+    nock(/jestjs.io/)
+        .log(console.log)
+        .get(urlPath)
+        .reply(500, [])
+
+    await expect(loadPage(dirpath, link)).rejects.toThrow('500');
+  });
+
 });
 
