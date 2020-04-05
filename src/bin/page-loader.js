@@ -21,9 +21,14 @@ axiosDebug({
 program
   .description('Download page from the Internet.')
   .version('1.0.0')
-  .arguments('<firstConfig>')
+  .arguments('<href>, [path]')
   .option('-o, --output [path]', 'output path', process.cwd())
   .action((href) => {
-    console.log(load(program.output, href));
+      load(program.output, href)
+          .catch(e => {
+            console.error(e.message);
+            process.exit(1);
+          })
   });
+
 program.parse(process.argv);

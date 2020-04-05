@@ -3,54 +3,10 @@ import nock from 'nock';
 import path from 'path';
 import os from 'os';
 import loadPage from '../src';
-nock.disableNetConnect();
 
+nock.disableNetConnect();
 const getFixturePath = (name) => path.join(__dirname, '..', '__fixtures__', name);
 let dirpath, expectedFiles, expected, expectedSource;
-
-describe('weary-fan.surge.sh', () => {
-  const link = 'https://weary-fan.surge.sh';
-  const nameBase = 'weary_fan_surge_sh_';
-  const htmlFilename = `${nameBase}.html`;
-  const htmlFilenameSource = `${nameBase}_source.html`;
-  const dirname = `${nameBase}_files`;
-
-  const getFixtureFilesPath = (name) => path.join(__dirname, '..', '__fixtures__', dirname, name);
-
-  beforeEach(async () => {
-    dirpath = await fs.mkdtemp(path.join(os.tmpdir(), 'page-loader-'));
-  });
-
-  beforeAll(async () => {
-    expected = await fs.readFile(getFixturePath(htmlFilename), 'utf-8');
-    expectedSource = await fs.readFile(getFixturePath(htmlFilenameSource), 'utf-8');
-    expectedFiles = await fs.readdir(getFixturePath(dirname));
-  });
-
-  test('page-loader should successfully load the weary-fan.surge.sh', async () => {
-    const faviconPath = '/favicon.ico';
-    const favicon = await fs.readFile(getFixtureFilesPath(faviconPath), 'utf-8');
-    const mainJsPath = '/main.js';
-    const mainJs = await fs.readFile(getFixtureFilesPath(mainJsPath), 'utf-8');
-    const cssPath = '/css/bootstrap.min.css';
-    const css = await fs.readFile(getFixtureFilesPath(cssPath), 'utf-8');
-
-    nock(/weary-fan.surge.sh/)
-        .log(console.log)
-        .get('/')
-        .reply(200, expectedSource)
-        .get(new RegExp(faviconPath))
-        .reply(200, favicon)
-        .get(new RegExp(mainJsPath))
-        .reply(200, mainJs)
-        .get(new RegExp(cssPath))
-        .reply(200, css);
-    await loadPage(dirpath, link);
-    const actualFileName = path.join(dirpath, htmlFilename);
-    const actual = await fs.readFile(actualFileName, 'utf-8');
-    expect(actual.trim()).toBe(expected.trim());
-  });
-});
 
 describe('jestjs_io_docs_en_expect', () => {
   const link = 'https://jestjs.io/docs/en/expect';
@@ -123,5 +79,14 @@ describe('jestjs_io_docs_en_expect', () => {
     const actual = await fs.readFile(actualFileName, 'utf-8');
     expect(actual.trim()).toBe(expected.trim());
   });
+
+  test('page-loader should fail and show ENOENT error', async () => {
+    await expect(loadPage('/wrong/path', link)).rejects.toThrow('ENOENT');
+  });
+
+  test('page-loader should fail and show EACCES error', async () => {
+    await expect(loadPage('/root', link)).rejects.toThrow('EACCES');
+  });
+
 });
 
