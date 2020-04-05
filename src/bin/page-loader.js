@@ -18,6 +18,13 @@ axiosDebug({
   },
 });
 
+const handleError = (e) => {
+    if (e.response) {
+        const {url} = e.config;
+        return `${e.response.statusText}: ${url}. ${e.message}.`
+    }
+    return e.message;
+};
 program
   .description('Download page from the Internet.')
   .version('1.0.0')
@@ -26,7 +33,7 @@ program
   .action((href) => {
       load(program.output, href)
           .catch(e => {
-            console.error(e.message);
+            console.error(handleError(e));
             process.exit(1);
           })
   });
