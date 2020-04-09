@@ -5,22 +5,18 @@ import path from 'path';
 import {
 	buildFileName, buildRemoteUrls, getAllLocalResources, replaceWithLocalUrls,
 } from './utils';
+import Listr from 'listr';
 
 const log = debug('page-loader');
 
 export default (dirPath, href) => {
     let data;
-    let allRemoteUrls;
-    let htmlFilePath;
-    let filesDirPath;
-    let dirname;
-	return fs.opendir(dirPath)
+    const {filename, dirname} = buildFileName(href);
+    log(`dirname: ${dirname}`);
+    const htmlFilePath = path.join(dirPath, filename);
+    const filesDirPath = path.join(dirPath, dirname);
+    const saveMainDataPromise = fs.opendir(dirPath)
 		.then(() => {
-            const {filename, dirname: dirnameTemp} = buildFileName(href);
-            dirname = dirnameTemp;
-            log(`dirname: ${dirname}`);
-            htmlFilePath = path.join(dirPath, filename);
-            filesDirPath = path.join(dirPath, dirname);
             return axios.get(href)
 		})
         .then((response) => {
@@ -32,7 +28,7 @@ export default (dirPath, href) => {
         })
         .then(() => {
             const allLocalResources = getAllLocalResources(data, href);
-            allRemoteUrls = buildRemoteUrls(allLocalResources, href);
+            const allRemoteUrls = buildRemoteUrls(allLocalResources, href);
             log(`allRemoteUrls: ${allRemoteUrls}`);
             return Promise.all(allRemoteUrls.map((url) => axios({
                 method: 'get',
@@ -40,23 +36,53 @@ export default (dirPath, href) => {
                 responseType: 'arraybuffer',
             })));
         })
-        .then((fileResponses) => {
-            fileResponses.forEach((fileResponse) => {
-                const {pathname} = new URL(fileResponse.config.url);
-                const filePath = path.join(filesDirPath, pathname);
-                const {dir} = path.parse(filePath);
-                fs.mkdir(dir, {recursive: true})
-                    .then(() => {
-                        fs.writeFile(filePath, fileResponse.data);
-                        log(`filepath: ${filePath}`);
-                    })
-                    .catch((e) => {
-                        throw e;
-                    });
-            });
-        })
         .catch((e) => {
             log(`Error message: ${e.message}`);
             throw e;
         })
+    const createResourceTask = (fileResponse) => {
+		const {pathname} = new URL(fileResponse.config.url);
+		const filePath = path.join(filesDirPath, pathname);
+		const {dir} = path.parse(filePath);
+		return {
+			title: `Save ${filePath}`,
+			task: () => {
+				return Promise.resolve(fs.mkdir(dir, {recursive: true})
+					.then(() => {
+						fs.writeFile(filePath, fileResponse.data);
+						log(`filepath: ${filePath}`);
+					})
+					.catch((e) => {
+						throw e;
+					}))
+			}
+		}
+	};
+    const tasks = new Listr([
+        {
+            title: `Save ${filename}`,
+            task: () => {
+                return Promise.resolve(saveMainDataPromise
+                    .then((fileResponses) => {
+                        const innerTasks = new Listr(fileResponses.map(createResourceTask), {concurrent: true})
+                        innerTasks.run().catch(err => {
+							throw err;
+						});
+                    })
+					.catch((e) => {
+						throw e;
+					}))
+
+			},
+        },
+		// {
+		// 	title: 'Failure',
+		// 	task: () => {
+		// 		throw new Error('Bar')
+		// 	}
+		// }
+	]);
+	tasks.run().catch(err => {
+		throw err;
+	});
 };

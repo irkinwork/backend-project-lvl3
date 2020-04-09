@@ -31,11 +31,17 @@ program
   .arguments('<href>, [path]')
   .option('-o, --output [path]', 'output path', process.cwd())
   .action((href) => {
-      load(program.output, href)
-          .catch(e => {
+      try {
+          load(program.output, href)
+      } catch (e) {
             console.error(handleError(e));
             process.exit(1);
-          })
+
+      }
+          // .catch(e => {
+          //   console.error(handleError(e));
+          //   process.exit(1);
+          // })
   });
 
 program.parse(process.argv);
