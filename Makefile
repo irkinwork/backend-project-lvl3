@@ -2,6 +2,8 @@ install:
 	npm i
 run1:
 	npx babel-node 'src/bin/page-loader.js' --output __fixtures__ https://weary-fan.surge.sh/
+run2:
+	DEBUG=page-loader npx babel-node 'src/bin/page-loader.js' --output __fixtures__ https://jestjs.io/docs/en/expect
 error1:
 	DEBUG=page-loader npx babel-node 'src/bin/page-loader.js' --output wrong/path https://jestjs.io/docs/en/expect
 error2:
