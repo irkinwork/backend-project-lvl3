@@ -74,14 +74,35 @@ describe('jestjs_io_docs_en_expect', () => {
 			.reply(200, spy)
 			.get(new RegExp(tabsPath))
 			.reply(200, tabs);
-		try {
+
 			await loadPage(dirpath, link);
 			const actualFileName = path.join(dirpath, htmlFilename);
 			const actual = await fs.readFile(actualFileName, 'utf-8');
 			await expect(actual.trim()).toBe(expected.trim());
-		} catch (e) {
-			console.log(e);
-		}
+	});
+
+	test('page-loader should load jestjs.io with listr error', async () => {
+
+		const jestSvgPath = '/img/jest.svg';
+		const jestSvg = await fs.readFile(getFixtureFilesPath(jestSvgPath), 'utf-8');
+		const languageSvgPath = '/img/language.svg';
+
+		nock(/jestjs.io/)
+			.log(console.log)
+			.get(urlPath)
+			.reply(200, expectedSource)
+			.get(new RegExp(jestSvgPath))
+			.reply(200, jestSvg)
+			.get(new RegExp(languageSvgPath))
+			.reply(404, [])
+			try {
+				await loadPage(dirpath, link);
+			} catch (e) {
+				const actualFileName = path.join(dirpath, htmlFilename);
+				const actual = await fs.readFile(actualFileName, 'utf-8');
+				expect(actual.trim()).toBe(expected.trim());
+				expect(e.message).toBe('Something went wrong');
+			}
 	});
 
 	test('page-loader should fail and show ENOENT error', async () => {
