@@ -63,7 +63,7 @@ export default (dirPath, href) => {
 
   const firstTask = new Listr([
     {
-      title: `Save ${filename}`,
+      title: `Save ${htmlFilePath}`,
       task: () => runSaveMainDataPromise()
         .then(() => Promise.resolve()),
     },

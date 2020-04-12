@@ -1,5 +1,5 @@
 import cheerio from 'cheerio';
-import { flatten, isNil } from 'lodash';
+import { flatten } from 'lodash';
 import { parse as parseUrl } from 'url';
 import path from 'path';
 
@@ -37,8 +37,9 @@ export const getAllLocalResources = (data, link) => {
 
   const allLinks = Object.keys(tags).map(getAllSourcesFromOneTag);
   return flatten(allLinks)
-    .filter((item) => !isNil(item))
-    .filter((item) => isUrlLocal(item, link));
+    .filter((item) => item !== '')
+    .filter((item) => isUrlLocal(item, link))
+    .filter((item) => !item.endsWith('/'));
 };
 
 export const replaceWithLocalUrls = (data, dirPath, url) => {

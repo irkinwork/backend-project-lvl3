@@ -25,14 +25,15 @@ const handleError = (e) => {
   }
   return e.message;
 };
+
 program
-  .description('Simple page loader.')
+  .description('Simple pageloader.')
   .version('1.0.0')
   .arguments('<href>, [path]')
   .option('-o, --output [path]', 'output path', process.cwd())
   .action((href) => load(program.output, href)
     .then(() => {
-      console.log(`All resources from ${href} were sucessfully downloaded`);
+      console.log(`All resources from ${href} were successfully downloaded`);
     })
     .catch((e) => {
       console.error(handleError(e));
