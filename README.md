@@ -3,3 +3,10 @@
 ##### Simple page loader for loading pages and resources from the Internet
 
 [![asciicast](https://asciinema.org/a/xdOahLIEvjyPZZZ7ZL3OEDgoF.svg)](https://asciinema.org/a/xdOahLIEvjyPZZZ7ZL3OEDgoF)
+
+Error handling:
+
+[![asciicast](https://asciinema.org/a/4j0NqxQLPzrD1WxNPKElqs8XV.svg)](https://asciinema.org/a/4j0NqxQLPzrD1WxNPKElqs8XV)
+
+Debug example:
+[![asciicast](https://asciinema.org/a/djjiFioWnqPyjiEiYB70q9rGE.svg)](https://asciinema.org/a/djjiFioWnqPyjiEiYB70q9rGE)
