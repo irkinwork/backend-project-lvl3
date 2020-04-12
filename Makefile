@@ -28,3 +28,5 @@ lintfix:
 	npx eslint . --fix
 test:
 	DEBUG=page-loader npx jest --watchAll
+tests:
+	DEBUG=page-loader npx jest
