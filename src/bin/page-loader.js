@@ -31,7 +31,10 @@ program
 	.arguments('<href>, [path]')
 	.option('-o, --output [path]', 'output path', process.cwd())
 	.action((href) => {
-		load(program.output, href)
+		return load(program.output, href)
+			.then(() => {
+				console.log(`All resources from ${href} were sucessfully downloaded`)
+			})
 			.catch(e => {
 				console.error(handleError(e));
 				process.exit(1);

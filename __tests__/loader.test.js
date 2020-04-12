@@ -21,7 +21,6 @@ describe('jestjs_io_docs_en_expect', () => {
 		dirpath = await fs.mkdtemp(path.join(os.tmpdir(), 'page-loader-jest-'));
 	});
 
-
 	beforeAll(async () => {
 		expected = await fs.readFile(getFixturePath(htmlFilename), 'utf-8');
 		expectedSource = await fs.readFile(getFixturePath(htmlFilenameSource), 'utf-8');
@@ -90,6 +89,10 @@ describe('jestjs_io_docs_en_expect', () => {
 	});
 
 	test('page-loader should fail and show EACCES error', async () => {
+		nock(/jestjs.io/)
+			.log(console.log)
+			.get(urlPath)
+			.reply(200, expectedSource)
 		await expect(loadPage('/root', link)).rejects.toThrow('EACCES');
 	});
 
