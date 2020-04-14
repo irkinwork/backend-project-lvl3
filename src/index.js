@@ -9,7 +9,7 @@ import {
 
 const log = debug('page-loader');
 
-const state = {
+const stateNames = {
   success: 'success',
   error: 'error',
 };
@@ -26,22 +26,18 @@ export default (dirPath, href) => {
 
   const makeGetResourceRequest = (url) => axios
     .get(url, { responseType: 'arraybuffer' })
-    .then((v) => ({ state: state.success, value: v }))
-    .catch((e) => ({ state: state.error, error: e }));
+    .then((v) => ({ state: stateNames.success, value: v }))
+    .catch((e) => ({ state: stateNames.error, error: e }));
 
   const runSaveMainDataPromise = () => axios.get(href)
     .then((response) => {
       data = response.data;
-      return fs.opendir(dirPath);
-    })
-    .then((filehandle) => filehandle.close())
-    .then(() => {
       const modifiedData = replaceWithLocalUrls(data, dirname, href);
       return fs.writeFile(htmlFilePath, modifiedData);
     });
 
   const createResourceTask = (fileResponse) => {
-    if (fileResponse.state === state.error) {
+    if (fileResponse.state === stateNames.error) {
       const { pathname } = new URL(fileResponse.error.config.url);
       const filePath = path.join(filesDirPath, pathname);
       return {
