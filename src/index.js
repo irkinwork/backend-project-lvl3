@@ -26,46 +26,35 @@ export default (dirPath, href) => {
 
   const makeGetResourceRequest = (url) => axios
     .get(url, { responseType: 'arraybuffer' })
-    .then((v) => ({ state: stateNames.success, value: v }))
-    .catch((e) => ({ state: stateNames.error, error: e }));
-
-  const runSaveMainDataPromise = () => axios.get(href)
-    .then((response) => {
-      data = response.data;
-      const modifiedData = replaceWithLocalUrls(data, dirname, href);
-      return fs.writeFile(htmlFilePath, modifiedData);
-    });
+    .then((value) => ({ state: stateNames.success, data: value }))
+    .catch((e) => ({ state: stateNames.error, data: e }));
 
   const createResourceTask = (fileResponse) => {
+    const { url } = fileResponse.data.config;
+    const { pathname } = new URL(url);
+    const filePath = path.join(filesDirPath, pathname);
     if (fileResponse.state === stateNames.error) {
-      const { pathname } = new URL(fileResponse.error.config.url);
-      const filePath = path.join(filesDirPath, pathname);
       return {
-        title: `Cannot save ${filePath}...`,
-        task: () => Promise.reject(new Error(fileResponse.error)),
+        title: url,
+        task: () => Promise.reject(new Error(fileResponse.data)),
       };
     }
-
-    const { pathname } = new URL(fileResponse.value.config.url);
-    const filePath = path.join(filesDirPath, pathname);
     const { dir } = path.parse(filePath);
     return {
-      title: `Save ${filePath}`,
+      title: url,
       task: () => fs.mkdir(dir, { recursive: true })
         .then(() => fs.writeFile(filePath, fileResponse.data))
         .then(() => Promise.resolve()),
     };
   };
 
-  const firstTask = new Listr([
-    {
-      title: `Save ${htmlFilePath}`,
-      task: () => runSaveMainDataPromise()
-        .then(() => Promise.resolve()),
-    },
-  ]);
   return fs.stat(dirPath)
-    .then(() => firstTask.run())
+    .then(() => axios.get(href))
+    .then((response) => {
+      data = response.data;
+      const modifiedData = replaceWithLocalUrls(data, dirname, href);
+      return fs.writeFile(htmlFilePath, modifiedData);
+    })
     .then(() => {
       const allLocalResources = getAllLocalResources(data, href);
       const allRemoteUrls = buildRemoteUrls(allLocalResources, href);
@@ -80,6 +69,7 @@ export default (dirPath, href) => {
       );
       return resourcesTasks.run();
     })
+    .then(() => Promise.resolve(htmlFilePath))
     .catch((e) => {
       throw e;
     });

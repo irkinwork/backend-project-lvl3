@@ -32,8 +32,9 @@ program
   .arguments('<href>')
   .option('-o, --output [path]', 'output path', process.cwd())
   .action((href) => load(program.output, href)
-    .then(() => {
-      console.log(`All resources from ${href} were successfully downloaded`);
+    .then((path) => {
+      console.log(`All resources from ${href} were successfully downloaded.`);
+      console.log(`You can open ${path}`);
     })
     .catch((e) => {
       console.error(handleError(e));
