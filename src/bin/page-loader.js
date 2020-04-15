@@ -29,7 +29,7 @@ const handleError = (e) => {
 program
   .description('Simple pageloader.')
   .version('1.0.0')
-  .arguments('<href>')
+  .arguments('<href>, [path]')
   .option('-o, --output [path]', 'output path', process.cwd())
   .action((href) => load(program.output, href)
     .then(() => {
