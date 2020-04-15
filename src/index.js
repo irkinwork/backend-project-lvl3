@@ -74,11 +74,11 @@ export default (dirPath, href) => {
       return Promise.all(innerPromises);
     })
     .then((fileResponses) => {
-      const innerTasks = new Listr(
+      const resourcesTasks = new Listr(
         fileResponses.map(createResourceTask),
         { concurrent: true, exitOnError: false },
       );
-      return innerTasks.run();
+      return resourcesTasks.run();
     })
     .catch((e) => {
       throw e;
