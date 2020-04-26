@@ -6,6 +6,22 @@ import Listr from 'listr';
 import {
   buildFileName, buildRemoteUrls, getAllLocalResources, replaceWithLocalUrls,
 } from './utils';
+import axiosDebug from 'axios-debug-log';
+
+axiosDebug({
+  request: (debug, config) => {
+    debug(`Request to ${config.url}`);
+  },
+  response: (debug, response) => {
+    debug(
+      `Response with ${response.headers['content-type']}`,
+      `from ${response.config.url}`,
+    );
+  },
+  error: (debug, error) => {
+    debug('Error', error);
+  },
+});
 
 const log = debug('page-loader');
 
@@ -24,30 +40,6 @@ export default (dirPath, href) => {
   log(`htmlFilePath: ${htmlFilePath}`);
   log(`filesDirPath: ${filesDirPath}`);
 
-  const makeGetResourceRequest = (url) => axios
-    .get(url, { responseType: 'arraybuffer' })
-    .then((value) => ({ state: stateNames.success, data: value }))
-    .catch((e) => ({ state: stateNames.error, data: e }));
-
-  const createResourceTask = (fileResponse) => {
-    const { url } = fileResponse.data.config;
-    const { pathname } = new URL(url);
-    const filePath = path.join(filesDirPath, pathname);
-    if (fileResponse.state === stateNames.error) {
-      return {
-        title: url,
-        task: () => Promise.reject(new Error(fileResponse.data)),
-      };
-    }
-    const { dir } = path.parse(filePath);
-    return {
-      title: url,
-      task: () => fs.mkdir(dir, { recursive: true })
-        .then(() => fs.writeFile(filePath, fileResponse.data))
-        .then(() => Promise.resolve()),
-    };
-  };
-
   return fs.stat(dirPath)
     .then(() => axios.get(href))
     .then((response) => {
@@ -58,19 +50,36 @@ export default (dirPath, href) => {
     .then(() => {
       const allLocalResources = getAllLocalResources(data, href);
       const allRemoteUrls = buildRemoteUrls(allLocalResources, href);
-      log(`allRemoteUrls:\n${allRemoteUrls.join('\n')}`);
-      const innerPromises = allRemoteUrls.map(makeGetResourceRequest);
+      log(`allRemoteUrls:`);
+      log(`${allRemoteUrls.join('\n')}`);
+      const innerPromises = allRemoteUrls.map((url) => axios
+        .get(url, { responseType: 'arraybuffer' })
+        .then((value) => ({ state: stateNames.success, data: value }))
+        .catch((e) => ({ state: stateNames.error, data: e })));
       return Promise.all(innerPromises);
     })
-    .then((fileResponses) => {
-      const resourcesTasks = new Listr(
-        fileResponses.map(createResourceTask),
+    .then((responses) => {
+      const tasks = new Listr(
+        responses.map((response) => {
+          const { url } = response.data.config;
+          const { pathname } = new URL(url);
+          const filePath = path.join(filesDirPath, pathname);
+          if (response.state === stateNames.error) {
+            return {
+              title: url,
+              task: () => Promise.reject(new Error(response.data)),
+            };
+          }
+          const { dir } = path.parse(filePath);
+          return {
+            title: url,
+            task: () => fs.mkdir(dir, { recursive: true })
+              .then(() => fs.writeFile(filePath, response.data))
+          };
+        }),
         { concurrent: true, exitOnError: false },
       );
-      return resourcesTasks.run();
+      return tasks.run();
     })
-    .then(() => Promise.resolve(htmlFilePath))
-    .catch((e) => {
-      throw e;
-    });
+    .then(() => htmlFilePath)
 };
