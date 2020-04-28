@@ -1,7 +1,7 @@
 install:
 	npm i
 run1:
-	npx babel-node 'src/bin/page-loader.js' --output /tmp https://weary-fan.surge.sh/
+	DEBUG=page-loader npx babel-node 'src/bin/page-loader.js' --output /tmp https://frontend-project-lvl3-gamma.now.sh/
 run2:
 	DEBUG=page-loader npx babel-node 'src/bin/page-loader.js' --output /tmp https://jestjs.io/
 run3:

@@ -54,27 +54,30 @@ export default (dirPath, href) => {
       log(`${allRemoteUrls.join('\n')}`);
       const innerPromises = allRemoteUrls.map((url) => axios
         .get(url, { responseType: 'arraybuffer' })
-        .then((value) => ({ state: stateNames.success, data: value }))
-        .catch((e) => ({ state: stateNames.error, data: e })));
+        .then((value) => ({ state: stateNames.success, payload: value }))
+        .catch((e) => ({ state: stateNames.error, payload: e })));
       return Promise.all(innerPromises);
     })
     .then((responses) => {
       const tasks = new Listr(
         responses.map((response) => {
-          const { url } = response.data.config;
+          const { url } = response.payload.config;
           const { pathname } = new URL(url);
           const filePath = path.join(filesDirPath, pathname);
           if (response.state === stateNames.error) {
             return {
               title: url,
-              task: () => Promise.reject(new Error(response.data)),
+              task: () => Promise.reject(new Error(response.payload)),
             };
           }
           const { dir } = path.parse(filePath);
           return {
             title: url,
             task: () => fs.mkdir(dir, { recursive: true })
-              .then(() => fs.writeFile(filePath, response.data))
+              .then(() => {
+                log(response.payload.data)
+                return fs.writeFile(filePath, response.payload.data)
+              })
           };
         }),
         { concurrent: true, exitOnError: false },
