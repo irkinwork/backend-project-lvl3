@@ -26,8 +26,6 @@ publish:
 	npm publish --dry-run
 publink:
 	make publish && npm link
-build:
-	npm run build
 lint:
 	npx eslint .
 lintfix:
