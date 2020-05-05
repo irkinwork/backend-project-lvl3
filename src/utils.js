@@ -1,15 +1,15 @@
 import cheerio from 'cheerio';
-import {parse as parseUrl} from 'url';
+import { parse as parseUrl } from 'url';
 import path from 'path';
 
 export const isUrlLocal = (url, base) => {
-  const {host: baseHost} = new URL(base);
-  const {host} = new URL(url, base);
+  const { host: baseHost } = new URL(base);
+  const { host } = new URL(url, base);
   return host === baseHost;
 };
 
 export const buildFileNameFromUrl = (url, postfix) => {
-  const {host, path: urlPath} = parseUrl(url);
+  const { host, path: urlPath } = parseUrl(url);
   const baseName = [host, urlPath]
     .join('')
     .replace(/[^\w]/g, '_');
@@ -23,7 +23,7 @@ const tags = {
 };
 
 export const buildRemoteUrls = (data, link) => {
-  const {origin} = new URL(link);
+  const { origin } = new URL(link);
   const $ = cheerio.load(data);
   const getAllSourcesFromOneTag = (tag) => $(tag).map((i, item) => $(item).attr(tags[tag])).get();
 
@@ -41,8 +41,8 @@ export const replaceWithLocalUrls = (data, dirPath, url) => {
     $(tag).each((i, item) => {
       const link = $(item).attr(tags[tag]);
       if (link && isUrlLocal(link, url)) {
-        const {origin} = new URL(url);
-        const {pathname} = new URL(link, origin);
+        const { origin } = new URL(url);
+        const { pathname } = new URL(link, origin);
         const newAttr = path.join(dirPath, pathname);
         $(item).attr(tags[tag], newAttr);
       }

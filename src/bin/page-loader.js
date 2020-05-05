@@ -4,7 +4,7 @@ import load from '../index';
 
 const handleError = (e) => {
   if (e.response) {
-    const {url} = e.config;
+    const { url } = e.config;
     return `${e.response.statusText}: ${url}. ${e.message}.`;
   }
   return e.message;
