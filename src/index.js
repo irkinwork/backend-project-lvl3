@@ -3,23 +3,23 @@ import axios from 'axios';
 import { promises as fs } from 'fs';
 import path from 'path';
 import Listr from 'listr';
+import axiosDebug from 'axios-debug-log';
 import {
   buildFileName, buildRemoteUrls, getAllLocalResources, replaceWithLocalUrls,
 } from './utils';
-import axiosDebug from 'axios-debug-log';
 
 axiosDebug({
-  request: (debug, config) => {
-    debug(`Request to ${config.url}`);
+  request: (log, config) => {
+    log(`Request to ${config.url}`);
   },
-  response: (debug, response) => {
-    debug(
+  response: (log, response) => {
+    log(
       `Response with ${response.headers['content-type']}`,
       `from ${response.config.url}`,
     );
   },
-  error: (debug, error) => {
-    debug('Error', error);
+  error: (log, error) => {
+    log('Error', error);
   },
 });
 
@@ -50,7 +50,7 @@ export default (dirPath, href) => {
     .then(() => {
       const allLocalResources = getAllLocalResources(data, href);
       const allRemoteUrls = buildRemoteUrls(allLocalResources, href);
-      log(`allRemoteUrls:`);
+      log('allRemoteUrls:');
       log(`${allRemoteUrls.join('\n')}`);
       const innerPromises = allRemoteUrls.map((url) => axios
         .get(url, { responseType: 'arraybuffer' })
@@ -75,14 +75,14 @@ export default (dirPath, href) => {
             title: url,
             task: () => fs.mkdir(dir, { recursive: true })
               .then(() => {
-                log(response.payload.data)
-                return fs.writeFile(filePath, response.payload.data)
-              })
+                log(response.payload.data);
+                return fs.writeFile(filePath, response.payload.data);
+              }),
           };
         }),
         { concurrent: true, exitOnError: false },
       );
       return tasks.run();
     })
-    .then(() => htmlFilePath)
+    .then(() => htmlFilePath);
 };
