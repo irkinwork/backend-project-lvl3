@@ -58,31 +58,31 @@ export default (dirPath, link) => {
 
       const innerPromises = allRemoteUrls.map((remoteUrl) => axios
         .get(remoteUrl, { responseType: 'arraybuffer' })
-        .then((value) => ({ state: stateNames.success, payload: value }))
-        .catch((e) => ({ state: stateNames.error, payload: e })));
+        .then((value) => {
+          const { url } = value.config;
+          const { pathname } = new URL(url);
+          const filePath = path.join(filesDirPath, pathname);
+          const { dir } = path.parse(filePath);
+          return { payload: value.data, url, filePath, dir, state: stateNames.success };
+        })
+        .catch((e) => ({ payload: e, url: e.config.url, state: stateNames.error })));
       return Promise.all(innerPromises);
     })
 
     .then((responses) => {
       const tasks = new Listr(
         responses.map((response) => {
-          const { url } = response.payload.config;
-          const { pathname } = new URL(url);
-          const filePath = path.join(filesDirPath, pathname);
           if (response.state === stateNames.error) {
             return {
-              title: url,
+              title: response.url,
               task: () => Promise.reject(new Error(response.payload)),
             };
           }
-          const { dir } = path.parse(filePath);
+          const { url, filePath, dir } = response;
           return {
             title: url,
             task: () => fs.mkdir(dir, { recursive: true })
-              .then(() => {
-                log(response.payload.data);
-                return fs.writeFile(filePath, response.payload.data);
-              }),
+              .then(() => fs.writeFile(filePath, response.payload))
           };
         }),
         { concurrent: true, exitOnError: false },
