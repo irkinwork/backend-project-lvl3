@@ -1,4 +1,5 @@
-![Node CI](https://github.com/irkinwork/backend-project-lvl3/workflows/Node%20CI/badge.svg) [![Maintainability](https://api.codeclimate.com/v1/badges/fc03c296fc5077a28104/maintainability)](https://codeclimate.com/github/irkinwork/backend-project-lvl3/maintainability)
+[![Node CI](https://github.com/irkinwork/backend-project-lvl3/workflows/Node%20CI/badge.svg)](https://github.com/irkinwork/backend-project-lvl3/actions)
+[![Maintainability](https://api.codeclimate.com/v1/badges/fc03c296fc5077a28104/maintainability)](https://codeclimate.com/github/irkinwork/backend-project-lvl3/maintainability)
 
 ## Simple page loader for loading pages and resources from the Internet
 
