@@ -63,7 +63,9 @@ export default (dirPath, link) => {
           const { pathname } = new URL(url);
           const filePath = path.join(filesDirPath, pathname);
           const { dir } = path.parse(filePath);
-          return { payload: value.data, url, filePath, dir, state: stateNames.success };
+          return {
+            payload: value.data, url, filePath, dir, state: stateNames.success,
+          };
         })
         .catch((e) => ({ payload: e, url: e.config.url, state: stateNames.error })));
       return Promise.all(innerPromises);
@@ -82,7 +84,7 @@ export default (dirPath, link) => {
           return {
             title: url,
             task: () => fs.mkdir(dir, { recursive: true })
-              .then(() => fs.writeFile(filePath, response.payload))
+              .then(() => fs.writeFile(filePath, response.payload)),
           };
         }),
         { concurrent: true, exitOnError: false },
