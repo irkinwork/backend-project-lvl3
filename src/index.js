@@ -6,7 +6,7 @@ import Listr from 'listr';
 import axiosDebug from 'axios-debug-log';
 import {
   buildFileNameFromUrl, buildRemoteUrls, replaceWithLocalUrls,
-} from './utils';
+} from './utils.js';
 
 const axiosDebugConfig = {
   request: (log, config) => {

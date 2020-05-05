@@ -1,25 +1,25 @@
 install:
 	npm i
 run1:
-	DEBUG=page-loader npx babel-node 'src/bin/page-loader.js' --output /tmp https://frontend-project-lvl3-gamma.now.sh/
+	DEBUG=page-loader npx node 'bin/page-loader.js' --output /tmp https://frontend-project-lvl3-gamma.now.sh/
 run2:
-	DEBUG=page-loader npx babel-node 'src/bin/page-loader.js' --output /tmp https://jestjs.io/
+	DEBUG=page-loader npx node 'bin/page-loader.js' --output /tmp https://jestjs.io/
 run3:
-	DEBUG=page-loader npx babel-node 'src/bin/page-loader.js' --output /tmp https://github.com/
+	DEBUG=page-loader npx node 'bin/page-loader.js' --output /tmp https://github.com/
 run4:
-	DEBUG=page-loader npx babel-node 'src/bin/page-loader.js' --output /tmp https://hexlet.io/
+	DEBUG=page-loader npx node 'bin/page-loader.js' --output /tmp https://hexlet.io/
 run5:
-	npx babel-node 'src/bin/page-loader.js' --output /tmp https://github.com/
+	npx node 'bin/page-loader.js' --output /tmp https://github.com/
 error1:
-	DEBUG=page-loader npx babel-node 'src/bin/page-loader.js' --output wrong/path https://jestjs.io/docs/en/expect
+	DEBUG=page-loader npx node 'bin/page-loader.js' --output wrong/path https://jestjs.io/docs/en/expect
 error2:
-	DEBUG=page-loader npx babel-node 'src/bin/page-loader.js' --output /root https://jestjs.io/docs/en/expect
+	DEBUG=page-loader npx node 'bin/page-loader.js' --output /root https://jestjs.io/docs/en/expect
 error3:
-	DEBUG=page-loader npx babel-node 'src/bin/page-loader.js' --output /tmp https://jestjs.io/docs/en/expec
+	DEBUG=page-loader npx node 'bin/page-loader.js' --output /tmp https://jestjs.io/docs/en/expec
 debug1:
-	DEBUG=* npx babel-node 'src/bin/page-loader.js' --output /tmp https://jestjs.io/docs/en/expect
+	DEBUG=* npx node 'bin/page-loader.js' --output /tmp https://jestjs.io/docs/en/expect
 axios-debug1:
-	DEBUG=axios npx babel-node 'src/bin/page-loader.js' --output /tmp https://jestjs.io/docs/en/expect
+	DEBUG=axios npx node 'bin/page-loader.js' --output /tmp https://jestjs.io/docs/en/expect
 open1:
 	xdg-open /tmp/jestjs_io_docs_en_expect.html
 publish:
@@ -32,7 +32,7 @@ lint:
 	npx eslint .
 lintfix:
 	npx eslint . --fix
-test:
-	DEBUG=page-loader npx jest --watchAll
 tests:
-	DEBUG=page-loader npx jest
+	DEBUG=page-loader npx -n --experimental-vm-modules jest --watchAll
+test:
+	npm run test

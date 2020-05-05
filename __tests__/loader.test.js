@@ -1,9 +1,14 @@
+import { test, expect } from '@jest/globals';
 import {promises as fs} from 'fs';
 import nock from 'nock';
 import path from 'path';
 import os from 'os';
 import loadPage from '../src';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 nock.disableNetConnect();
 const getFixturePath = (name) => path.join(__dirname, '..', '__fixtures__', name);
 let dirpath, expected, expectedSource;
@@ -13,8 +18,8 @@ const urlPath = '/';
 const nameBase = 'frontend_project_lvl3_gamma_now_sh_';
 const htmlFilename = `${nameBase}.html`;
 const htmlFilenameSource = `${nameBase}__source.html`;
-const dirname = `${nameBase}_files`;
-const getFixtureFilesPath = (name) => path.join(__dirname, '..', '__fixtures__', dirname, name);
+const filesDirname = `${nameBase}_files`;
+const getFixtureFilesPath = (name) => path.join(__dirname, '..', '__fixtures__', filesDirname, name);
 
 const resourcesPaths = [
   '/favicon.ico',

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import program from 'commander';
-import load from '../index';
+import load from '../src/index.js';
 
 const handleError = (e) => {
   if (e.response) {
@@ -11,7 +11,7 @@ const handleError = (e) => {
 };
 
 program
-  .description('Simple pageloader.')
+  .description('Simple pageloader')
   .version('1.0.0')
   .arguments('<url>')
   .option('-o, --output [path]', 'output path', process.cwd())
