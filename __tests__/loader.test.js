@@ -87,15 +87,5 @@ describe('errors', () => {
 
     await expect(loadPage(dirpath, errorUrl)).rejects.toThrow('404');
   });
-
-  test('page-loader should fail and show 500 error', async () => {
-    const errorUrl = 'https://frontend-project-lvl3-gamma.now.sh/error';
-    const urlPath = '/error';
-    scope
-      .get(urlPath)
-      .reply(500, []);
-
-    await expect(loadPage(dirpath, errorUrl)).rejects.toThrow('500');
-  });
 })
 
