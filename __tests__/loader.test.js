@@ -11,7 +11,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 nock.disableNetConnect();
 const getFixturePath = (name) => path.join(__dirname, '..', '__fixtures__', name);
-let dirpath, expected, expectedSource;
+let dirpath, expected, expectedSource, noAcessDir;
 
 const link = 'https://frontend-project-lvl3-gamma.now.sh';
 const urlPath = '/';
@@ -30,6 +30,8 @@ const scope = nock(link).log(console.log);
 
 beforeEach(async () => {
   dirpath = await fs.mkdtemp(path.join(os.tmpdir(), 'page-loader-rss-'));
+  noAcessDir = await fs.mkdtemp(path.join(os.tmpdir(), 'page-loader-no-access'));
+  fs.chmod(noAcessDir, 0o666);
   scope
     .get(urlPath)
     .reply(200, expectedSource);
@@ -71,7 +73,7 @@ describe('errors', () => {
   });
 
   test('page-loader should fail and show EACCES error', async () => {
-    await expect(loadPage('/root', link)).rejects.toThrow('EACCES');
+    await expect(loadPage(noAcessDir, link)).rejects.toThrow('EACCES');
   });
 
   test('page-loader should fail and show 400 error', async () => {
