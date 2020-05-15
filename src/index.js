@@ -5,7 +5,7 @@ import path from 'path';
 import Listr from 'listr';
 import axiosDebug from 'axios-debug-log';
 import {
-  buildFileNameFromUrl, buildRemoteUrls, replaceWithLocalUrls,
+  buildFileNameFromUrl, modifyData,
 } from './utils.js';
 
 const axiosDebugConfig = {
@@ -28,6 +28,7 @@ const log = debug('page-loader');
 export default (dirPath, link) => {
   axiosDebug(axiosDebugConfig);
   let data;
+  let allUrls;
   const htmlFileName = buildFileNameFromUrl(link, '.html');
   const filesDirName = buildFileNameFromUrl(link, '_files');
   const htmlFilePath = path.join(dirPath, htmlFileName);
@@ -42,13 +43,12 @@ export default (dirPath, link) => {
     .then(() => axios.get(link))
     .then((response) => {
       data = response.data;
-      const modifiedData = replaceWithLocalUrls(data, filesDirName, link);
-      return fs.writeFile(htmlFilePath, modifiedData);
+      const modifiedData = modifyData(data, filesDirName, link);
+      allUrls = modifiedData.links;
+      return fs.writeFile(htmlFilePath, modifiedData.html);
     })
 
     .then(() => {
-      const allUrls = buildRemoteUrls(data, link);
-
       log(`all remote urls:\n${allUrls.join('\n')}`);
       const tasks = new Listr(allUrls.map((url) => {
         let resourceData;
