@@ -60,14 +60,10 @@ describe('errors', () => {
         .get(path)
         .reply(404)
     });
-    try {
-      await loadPage(dirpath, link);
-    } catch (e) {
+      await expect(loadPage(dirpath, link)).rejects.toThrow('Something went wrong');
       const actualFileName = path.join(dirpath, htmlFilename);
       const actual = await fs.readFile(actualFileName, 'utf-8');
       expect(actual.trim()).toBe(expected.trim());
-      expect(e.message).toBe('Something went wrong');
-    }
   });
 
   test('page-loader should fail and show ENOENT error', async () => {

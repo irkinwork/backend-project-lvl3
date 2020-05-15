@@ -27,9 +27,8 @@ export const buildRemoteUrls = (data, link) => {
   const $ = cheerio.load(data);
   const getAllSourcesFromOneTag = (tag) => $(tag).map((i, item) => $(item).attr(tags[tag])).get();
 
-  const allLinks = Object.keys(tags).map(getAllSourcesFromOneTag);
+  const allLinks = Object.keys(tags).flatMap(getAllSourcesFromOneTag);
   return allLinks
-    .flat()
     .filter((item) => isUrlLocal(item, link))
     .map((url) => new URL(url, origin).toString());
 };
