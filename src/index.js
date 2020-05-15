@@ -25,11 +25,6 @@ const axiosDebugConfig = {
 
 const log = debug('page-loader');
 
-const stateNames = {
-  success: 'success',
-  error: 'error',
-};
-
 export default (dirPath, link) => {
   axiosDebug(axiosDebugConfig);
   let data;
@@ -52,44 +47,29 @@ export default (dirPath, link) => {
     })
 
     .then(() => {
-      const allRemoteUrls = buildRemoteUrls(data, link);
+      const allUrls = buildRemoteUrls(data, link);
 
-      log(`all remote urls:\n${allRemoteUrls.join('\n')}`);
-
-      const innerPromises = allRemoteUrls.map((remoteUrl) => axios
-        .get(remoteUrl, { responseType: 'arraybuffer' })
-        .then((value) => {
-          const { url } = value.config;
-          const { pathname } = new URL(url);
-          const filePath = path.join(filesDirPath, pathname);
-          const { dir } = path.parse(filePath);
-          return {
-            payload: value.data, url, filePath, dir, state: stateNames.success,
-          };
-        })
-        .catch((e) => ({ payload: e, url: e.config.url, state: stateNames.error })));
-      return Promise.all(innerPromises);
-    })
-
-    .then((responses) => {
-      const tasks = new Listr(
-        responses.map((response) => {
-          if (response.state === stateNames.error) {
-            return {
-              title: response.url,
-              task: () => Promise.reject(new Error(response.payload)),
-            };
-          }
-          const { url, filePath, dir } = response;
-          return {
-            title: url,
-            task: () => fs.mkdir(dir, { recursive: true })
-              .then(() => fs.writeFile(filePath, response.payload)),
-          };
-        }),
-        { concurrent: true, exitOnError: false },
-      );
+      log(`all remote urls:\n${allUrls.join('\n')}`);
+      const tasks = new Listr(allUrls.map((url) => {
+        let resourceData;
+        let filePath;
+        return ({
+          title: url,
+          task: () => axios
+            .get(url, { responseType: 'arraybuffer' })
+            .then((value) => {
+              resourceData = value.data;
+              const { pathname } = new URL(url);
+              filePath = path.join(filesDirPath, pathname);
+              const { dir } = path.parse(filePath);
+              return fs.mkdir(dir, { recursive: true });
+            })
+            .then(() => fs.writeFile(filePath, resourceData))
+            .catch((e) => Promise.reject(e)),
+        });
+      }), { concurrent: true, exitOnError: false });
       return tasks.run();
     })
+
     .then(() => htmlFilePath);
 };
