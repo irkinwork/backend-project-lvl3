@@ -31,7 +31,7 @@ const scope = nock(link).log(console.log);
 beforeEach(async () => {
   dirpath = await fs.mkdtemp(path.join(os.tmpdir(), 'page-loader-rss-'));
   noAcessDir = await fs.mkdtemp(path.join(os.tmpdir(), 'page-loader-no-access'));
-  fs.chmod(noAcessDir, 0o666);
+  fs.chmod(noAcessDir, 0o000);
   scope
     .get(urlPath)
     .reply(200, expectedSource);
