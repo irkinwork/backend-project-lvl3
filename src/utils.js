@@ -10,9 +10,9 @@ export const buildFileNameFromUrl = (url, postfix) => {
   return `${baseName}${postfix}`;
 };
 
-const filterUrl = (url, base) => {
-  const { host: baseHost } = new URL(base);
-  const { host, pathname } = new URL(url, base);
+const filterUrl = (link, baseUrl) => {
+  const { host: baseHost } = new URL(baseUrl);
+  const { host, pathname } = new URL(link, baseUrl);
   return host === baseHost && pathname !== '/';
 };
 
@@ -22,19 +22,19 @@ const tags = {
   script: 'src',
 };
 
-export const modifyData = (data, dirPath, url) => {
-  const { origin } = new URL(url);
+export const modifyData = (data, dirPath, baseUrl) => {
+  const { origin } = new URL(baseUrl);
   const $ = cheerio.load(data);
   const getAllSourcesFromOneTag = (tag) => $(tag).map((i, item) => $(item).attr(tags[tag])).get();
 
   const links = Object.keys(tags).flatMap(getAllSourcesFromOneTag)
-    .filter((item) => filterUrl(item, url))
+    .filter((link) => filterUrl(link, baseUrl))
     .map((link) => new URL(link, origin).toString());
 
   Object.keys(tags).forEach((tag) => {
     $(tag).each((i, item) => {
       const link = $(item).attr(tags[tag]);
-      if (link && filterUrl(link, url)) {
+      if (link && filterUrl(link, baseUrl)) {
         const { pathname } = new URL(link, origin);
         const newAttr = path.join(dirPath, pathname);
         $(item).attr(tags[tag], newAttr);
