@@ -24,8 +24,8 @@ export const modifyData = (data, dirPath, baseUrl) => {
   const isLinkNonRoot = (link) => new URL(link, baseUrl).pathname !== '/';
   const isLinkProper = (link) => isLinkNonRoot(link) && isLinkLocal(link);
 
-  const getAllSourcesFromOneTag = (tag) => $(tag)
-    .map((i, item) => $(item).attr(tags[tag])).get();
+  const getAllSourcesFromOneTag = (tag) => $(tag).map((i, item) => $(item).attr(tags[tag])).get();
+
   const links = Object.keys(tags).flatMap(getAllSourcesFromOneTag)
     .filter(isLinkProper)
     .map((link) => new URL(link, origin).toString());
