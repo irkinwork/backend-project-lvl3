@@ -10,12 +10,6 @@ export const buildFileNameFromUrl = (url, postfix) => {
   return `${baseName}${postfix}`;
 };
 
-const filterUrl = (link, baseUrl) => {
-  const { host: baseHost } = new URL(baseUrl);
-  const { host, pathname } = new URL(link, baseUrl);
-  return host === baseHost && pathname !== '/';
-};
-
 const tags = {
   img: 'src',
   link: 'href',
@@ -23,18 +17,23 @@ const tags = {
 };
 
 export const modifyData = (data, dirPath, baseUrl) => {
-  const { origin } = new URL(baseUrl);
+  const { origin, host } = new URL(baseUrl);
   const $ = cheerio.load(data);
-  const getAllSourcesFromOneTag = (tag) => $(tag).map((i, item) => $(item).attr(tags[tag])).get();
 
+  const isLinkLocal = (link) => new URL(link, baseUrl).host === host;
+  const isLinkNonRoot = (link) => new URL(link, baseUrl).pathname !== '/';
+  const isLinkProper = (link) => isLinkNonRoot(link) && isLinkLocal(link);
+
+  const getAllSourcesFromOneTag = (tag) => $(tag)
+    .map((i, item) => $(item).attr(tags[tag])).get();
   const links = Object.keys(tags).flatMap(getAllSourcesFromOneTag)
-    .filter((link) => filterUrl(link, baseUrl))
+    .filter(isLinkProper)
     .map((link) => new URL(link, origin).toString());
 
   Object.keys(tags).forEach((tag) => {
     $(tag).each((i, item) => {
       const link = $(item).attr(tags[tag]);
-      if (link && filterUrl(link, baseUrl)) {
+      if (link && isLinkProper(link)) {
         const { pathname } = new URL(link, origin);
         const newAttr = path.join(dirPath, pathname);
         $(item).attr(tags[tag], newAttr);

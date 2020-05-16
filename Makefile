@@ -9,7 +9,7 @@ run3:
 run4:
 	DEBUG=page-loader npx node 'bin/page-loader.js' --output /tmp https://hexlet.io/
 run5:
-	npx node 'bin/page-loader.js' --output /tmp https://github.com/
+	DEBUG=page-loader npx node 'bin/page-loader.js' --output /tmp https://github.com/
 error1:
 	DEBUG=page-loader npx node 'bin/page-loader.js' --output wrong/path https://jestjs.io/docs/en/expect
 error2:
