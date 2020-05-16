@@ -31,7 +31,7 @@ const scope = nock(link).log(console.log);
 beforeEach(async () => {
   dirpath = await fs.mkdtemp(path.join(os.tmpdir(), 'page-loader-rss-'));
   noAcessDir = await fs.mkdtemp(path.join(os.tmpdir(), 'page-loader-no-access'));
-  fs.chmod(noAcessDir, 0o000);
+  await fs.chmod(noAcessDir, 0o000);
   scope
     .get(urlPath)
     .reply(200, expectedSource);
@@ -49,10 +49,8 @@ test('page-loader should successfully load the https://frontend-project-lvl3-gam
       .get(path)
       .reply(200, resourceData)
   });
-  await loadPage(dirpath, link);
-  const actualFileName = path.join(dirpath, htmlFilename);
-  const actual = await fs.readFile(actualFileName, 'utf-8');
-  await expect(actual.trim()).toBe(expected.trim());
+  const {data} = await loadPage(dirpath, link);
+  await expect(data.trim()).toBe(expected.trim());
 });
 
 describe('errors', () => {
@@ -62,10 +60,11 @@ describe('errors', () => {
         .get(path)
         .reply(404)
     });
-      await expect(loadPage(dirpath, link)).rejects.toThrow('Something went wrong');
-      const actualFileName = path.join(dirpath, htmlFilename);
-      const actual = await fs.readFile(actualFileName, 'utf-8');
-      expect(actual.trim()).toBe(expected.trim());
+
+    expect(async () => {
+        const {data} = await loadPage(dirpath, link);
+        expect(data.trim()).toBe(expected.trim());
+      }).rejects.toThrow('Something went wrong');
   });
 
   test('page-loader should fail and show ENOENT error', async () => {

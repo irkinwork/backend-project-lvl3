@@ -27,8 +27,8 @@ const log = debug('page-loader');
 
 export default (dirPath, link) => {
   axiosDebug(axiosDebugConfig);
-  let data;
   let allUrls;
+  let modifiedData;
   const htmlFileName = buildFileNameFromUrl(link, '.html');
   const filesDirName = buildFileNameFromUrl(link, '_files');
   const htmlFilePath = path.join(dirPath, htmlFileName);
@@ -41,9 +41,8 @@ export default (dirPath, link) => {
 
   return fs.stat(dirPath)
     .then(() => axios.get(link))
-    .then((response) => {
-      data = response.data;
-      const modifiedData = modifyData(data, filesDirName, link);
+    .then(({ data }) => {
+      modifiedData = modifyData(data, filesDirName, link);
       allUrls = modifiedData.links;
       return fs.writeFile(htmlFilePath, modifiedData.html);
     })
@@ -57,8 +56,8 @@ export default (dirPath, link) => {
           title: url,
           task: () => axios
             .get(url, { responseType: 'arraybuffer' })
-            .then((value) => {
-              resourceData = value.data;
+            .then(({ data }) => {
+              resourceData = data;
               const { pathname } = new URL(url);
               filePath = path.join(filesDirPath, pathname);
               const { dir } = path.parse(filePath);
@@ -71,5 +70,5 @@ export default (dirPath, link) => {
       return tasks.run();
     })
 
-    .then(() => htmlFilePath);
+    .then(() => ({ path: htmlFilePath, data: modifiedData.html }));
 };
