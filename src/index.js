@@ -5,7 +5,7 @@ import path from 'path';
 import Listr from 'listr';
 import axiosDebug from 'axios-debug-log';
 import {
-  buildFileNameFromUrl, modifyData,
+  buildFileNameFromUrl, prepareData,
 } from './utils.js';
 
 const axiosDebugConfig = {
@@ -42,7 +42,7 @@ export default (dirPath, link) => {
   return fs.stat(dirPath)
     .then(() => axios.get(link))
     .then(({ data }) => {
-      modifiedData = modifyData(data, filesDirName, link);
+      modifiedData = prepareData(data, filesDirName, link);
       allUrls = modifiedData.links;
       return fs.writeFile(htmlFilePath, modifiedData.html);
     })
