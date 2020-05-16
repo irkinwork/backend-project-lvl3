@@ -1,7 +1,7 @@
 import cheerio from 'cheerio';
 import { parse as parseUrl } from 'url';
 import path from 'path';
-import isEmpty from 'lodash/isEmpty';
+import _ from 'lodash';
 
 export const buildFileNameFromUrl = (url, postfix) => {
   const { host, path: urlPath } = parseUrl(url);
@@ -23,7 +23,7 @@ export const prepareData = (data, dirPath, baseUrl) => {
 
   const isLinkLocal = (link) => new URL(link, baseUrl).host === host;
   const isLinkNonRoot = (link) => new URL(link, baseUrl).pathname !== '/';
-  const isLinkNonEmpty = (link) => !isEmpty(link);
+  const isLinkNonEmpty = (link) => !_.isEmpty(link);
   const isLinkProper = (link) => isLinkNonRoot(link) && isLinkLocal(link) && isLinkNonEmpty(link);
 
   const links = [];
