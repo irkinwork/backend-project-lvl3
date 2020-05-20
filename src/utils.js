@@ -18,27 +18,37 @@ const tags = {
 };
 
 export const prepareData = (data, dirPath, baseUrl) => {
-  const { origin, host } = new URL(baseUrl);
-  const $ = cheerio.load(data);
-
-  const isLinkLocal = (link) => new URL(link, baseUrl).host === host;
   const isLinkNonRoot = (link) => new URL(link, baseUrl).pathname !== '/';
   const isLinkNonEmpty = (link) => !_.isEmpty(link);
-  const isLinkProper = (link) => isLinkNonRoot(link) && isLinkLocal(link) && isLinkNonEmpty(link);
+  const isLinkProper = (link) => isLinkNonRoot(link) && isLinkNonEmpty(link);
+  const $ = cheerio.load(data);
 
-  const links = [];
+  const getNormalizedAttr = (currentValue) => new URL(currentValue, baseUrl).toString();
 
-  Object.keys(tags).forEach((tag) => {
-    $(tag).each((i, item) => {
-      const link = $(item).attr(tags[tag]);
-      if (isLinkProper(link)) {
-        const remoteLink = new URL(link, origin);
-        links.push(remoteLink.toString());
-        const { pathname } = remoteLink;
-        const newAttr = path.join(dirPath, pathname);
-        $(item).attr(tags[tag], newAttr);
-      }
+  const getLocalUrl = (currentValue) => {
+    const newUrl = new URL(currentValue, baseUrl);
+    const { pathname } = newUrl;
+    return isLinkProper(currentValue) ? path.join(dirPath, pathname) : currentValue;
+  };
+
+  const modifyTree = (getNewAttr) => {
+    $(Object.keys(tags).join(', ')).each((i, item) => {
+      const currentTag = $(item).prop('tagName').toLowerCase();
+      const currentValue = $(item).attr(tags[currentTag]);
+      const newValue = currentValue ? getNewAttr(currentValue) : currentValue;
+      $(item).attr(tags[currentTag], newValue);
     });
-  });
+  };
+
+  modifyTree(getNormalizedAttr);
+
+  const getAllSourcesFromOneTag = (tag) => $(tag).map((i, item) => $(item).attr(tags[tag])).get();
+
+  const links = Object.keys(tags)
+    .flatMap(getAllSourcesFromOneTag)
+    .filter(isLinkProper);
+
+  modifyTree(getLocalUrl);
+
   return { html: $.html(), links };
 };
