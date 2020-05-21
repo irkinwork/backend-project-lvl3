@@ -1,7 +1,11 @@
-<!DOCTYPE html><html><head>
+<!doctype html>
+<html>
+
+<head>
   <title>RSS Feader</title>
 <link rel="shortcut icon" href="frontend_project_lvl3_gamma_now_sh__files/favicon.ico"><link href="frontend_project_lvl3_gamma_now_sh__files/css/bootstrap.min.css" rel="stylesheet">
 <link rel="canonical" href="https://frontend-project-lvl3-gamma.now.sh/" data-pjax-transient>
+<link rel="canonical" href="/" data-pjax-transient>
 </head>
 <body>
   <div id="point">
@@ -12,13 +16,14 @@
         </div>
       </div>
     </div>
-    <div class="modal fade" id="infoModal" tabindex="-1" role="dialog" aria-labelledby="infoModalLabel" aria-hidden="true">
+    <div class="modal fade" id="infoModal" tabindex="-1" role="dialog" aria-labelledby="infoModalLabel"
+      aria-hidden="true">
       <div class="modal-dialog" role="document">
         <div class="modal-content">
           <div class="modal-header">
             <h5 class="modal-title" id="infoModalLabel"></h5>
             <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-              <span aria-hidden="true">&#xD7;</span>
+              <span aria-hidden="true">&times;</span>
             </button>
           </div>
           <div class="modal-body"></div>
@@ -30,10 +35,10 @@
         Example RSS links:
         <a href="https://ru.hexlet.io/lessons.rss">Hexlet Lessons</a>,
         <a href="https://ru.hexlet.io/blog.rss">Hexlet Blog</a>,
-        <a href="http://lorem-rss.herokuapp.com/feed?unit=second&amp;interval=1">Lorem RSS 1 sec</a>,
-        <a href="http://lorem-rss.herokuapp.com/feed?unit=minute&amp;interval=1">Lorem RSS 1 min</a>,
-        <a href="http://lorem-rss.herokuapp.com/feed?unit=minute&amp;interval=7">Invalid Lorem RSS</a>,
-        <a href="http://lorem-rss.herokuapp.com/feed?unit=minute&amp;interval=70">Second Invalid Lorem RSS</a>,
+        <a href="http://lorem-rss.herokuapp.com/feed?unit=second&interval=1">Lorem RSS 1 sec</a>,
+        <a href="http://lorem-rss.herokuapp.com/feed?unit=minute&interval=1">Lorem RSS 1 min</a>,
+        <a href="http://lorem-rss.herokuapp.com/feed?unit=minute&interval=7">Invalid Lorem RSS</a>,
+        <a href="http://lorem-rss.herokuapp.com/feed?unit=minute&interval=70">Second Invalid Lorem RSS</a>,
         <a href="http://feeds.bbci.co.uk/news/rss.xml">BBC News</a>
       </div>
       <form id="form" class="jumbotron pb-4 pt-4">
@@ -41,7 +46,8 @@
           <div class="input-group-prepend">
             <span class="input-group-text" id="basic-addon1">Insert your RSS link</span>
           </div>
-          <input name="url" type="text" id="input" class="form-control alert-dark" placeholder="Enter RSS link" aria-label="RSS Link" aria-describedby="basic-addon1">
+          <input name="url" type="text" id="input" class="form-control alert-dark" placeholder="Enter RSS link"
+            aria-label="RSS Link" aria-describedby="basic-addon1">
           <div class="input-group-append">
             <button class="btn btn-outline-secondary" id="submit" role="button">Get RSS</button>
           </div>
@@ -50,6 +56,6 @@
       <div id="list"></div>
     </div>
   </div>
-<script type="text/javascript" src="frontend_project_lvl3_gamma_now_sh__files/main.js"></script><script></script>
+<script type="text/javascript" src="frontend_project_lvl3_gamma_now_sh__files/main.js"></script><script></script></body>
 
-</body></html>
+</html>

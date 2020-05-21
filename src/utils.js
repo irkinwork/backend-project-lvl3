@@ -1,7 +1,6 @@
 import cheerio from 'cheerio';
 import { parse as parseUrl } from 'url';
 import path from 'path';
-import _ from 'lodash';
 
 export const buildFileNameFromUrl = (url, postfix) => {
   const { host, path: urlPath } = parseUrl(url);
@@ -18,37 +17,29 @@ const tags = {
 };
 
 export const prepareData = (data, dirPath, baseUrl) => {
-  const isLinkNonRoot = (link) => new URL(link, baseUrl).pathname !== '/';
-  const isLinkNonEmpty = (link) => !_.isEmpty(link);
-  const isLinkProper = (link) => isLinkNonRoot(link) && isLinkNonEmpty(link);
   const $ = cheerio.load(data);
 
-  const getNormalizedAttr = (currentValue) => new URL(currentValue, baseUrl).toString();
+  const getNewLink = (link) => new URL(link, baseUrl);
 
-  const getLocalUrl = (currentValue) => {
-    const newUrl = new URL(currentValue, baseUrl);
-    const { pathname } = newUrl;
-    return isLinkProper(currentValue) ? path.join(dirPath, pathname) : currentValue;
+  const getNormalized = (sourceLink) => {
+    const normalizedUrl = getNewLink(sourceLink);
+    const normalized = normalizedUrl.toString();
+    const relative = path.join(dirPath, normalizedUrl.pathname);
+    return { sourceLink, normalized, relative };
   };
 
-  const modifyTree = (getNewAttr) => {
-    $(Object.keys(tags).join(', ')).each((i, item) => {
-      const currentTag = $(item).prop('tagName').toLowerCase();
-      const currentValue = $(item).attr(tags[currentTag]);
-      const newValue = currentValue ? getNewAttr(currentValue) : currentValue;
-      $(item).attr(tags[currentTag], newValue);
-    });
-  };
+  const getAllSourcesFromOneTag = (tag) => $(tag)
+    .map((i, item) => $(item).attr(tags[tag]))
+    .get();
 
-  modifyTree(getNormalizedAttr);
-
-  const getAllSourcesFromOneTag = (tag) => $(tag).map((i, item) => $(item).attr(tags[tag])).get();
-
-  const links = Object.keys(tags)
+  const hash = Object.keys(tags)
     .flatMap(getAllSourcesFromOneTag)
-    .filter(isLinkProper);
+    .filter((link) => getNewLink(link).pathname !== '/')
+    .map(getNormalized);
 
-  modifyTree(getLocalUrl);
+  const links = hash.map(({ normalized }) => normalized);
+  const html = hash
+    .reduce((acc, item) => acc.replace(item.sourceLink, item.relative), data);
 
-  return { html: $.html(), links };
+  return { html, links };
 };
