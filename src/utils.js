@@ -21,11 +21,11 @@ export const prepareData = (data, dirPath, baseUrl) => {
   const { origin } = new URL(baseUrl);
   const getNormalized = (link) => new URL(link, baseUrl);
 
-  const getHash = (sourceLink) => {
-    const normalizedUrl = getNormalized(sourceLink);
+  const getHash = (source) => {
+    const normalizedUrl = getNormalized(source);
     const normalized = normalizedUrl.toString();
     const relative = path.join(dirPath, normalizedUrl.pathname);
-    return { sourceLink, normalized, relative };
+    return { source, normalized, relative };
   };
 
   const getAllSourcesFromOneTag = (tag) => $(tag)
@@ -40,7 +40,7 @@ export const prepareData = (data, dirPath, baseUrl) => {
 
   const links = hash.map(({ normalized }) => normalized);
   const html = hash
-    .reduce((acc, item) => acc.replace(item.sourceLink, item.relative), data);
+    .reduce((acc, item) => acc.replace(item.source, item.relative), data);
 
   return { html, links };
 };
