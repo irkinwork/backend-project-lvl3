@@ -39,6 +39,28 @@ export default (dirPath, link) => {
   log(`htmlFilePath: ${htmlFilePath}`);
   log(`filesDirPath: ${filesDirPath}`);
 
+  const prepareTaskData = (url) => {
+    const { pathname } = new URL(url);
+    const filePath = path.join(filesDirPath, pathname);
+    const { dir } = path.parse(filePath);
+    return { url, filePath, dir };
+  };
+
+  const buildTask = ({ url, filePath, dir }) => {
+    let resourceData;
+    return ({
+      title: url,
+      task: () => axios
+        .get(url, { responseType: 'arraybuffer' })
+        .then(({ data }) => {
+          resourceData = data;
+          return fs.mkdir(dir, { recursive: true });
+        })
+        .then(() => fs.writeFile(filePath, resourceData))
+        .catch((e) => Promise.reject(e)),
+    });
+  };
+
   return fs.stat(dirPath)
     .then(() => axios.get(link))
     .then(({ data }) => {
@@ -49,25 +71,11 @@ export default (dirPath, link) => {
 
     .then(() => {
       log(`all remote urls:\n${allUrls.join('\n')}`);
-      const tasks = new Listr(allUrls.map((url) => {
-        let resourceData;
-        let filePath;
-        return ({
-          title: url,
-          task: () => axios
-            .get(url, { responseType: 'arraybuffer' })
-            .then(({ data }) => {
-              resourceData = data;
-              const { pathname } = new URL(url);
-              filePath = path.join(filesDirPath, pathname);
-              const { dir } = path.parse(filePath);
-              return fs.mkdir(dir, { recursive: true });
-            })
-            .then(() => fs.writeFile(filePath, resourceData))
-            .catch((e) => Promise.reject(e)),
-        });
-      }), { concurrent: true, exitOnError: false });
-      return tasks.run();
+      const tasks = allUrls
+        .map(prepareTaskData)
+        .map(buildTask);
+      return new Listr(tasks, { concurrent: true, exitOnError: false })
+        .run();
     })
 
     .then(() => ({ path: htmlFilePath, data: modifiedData.html }));
