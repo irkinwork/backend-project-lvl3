@@ -2,7 +2,6 @@ import debug from 'debug';
 import axios from 'axios';
 import { promises as fs } from 'fs';
 import path from 'path';
-import Listr from 'listr';
 import axiosDebug from 'axios-debug-log';
 import {
   buildFileNameFromUrl, prepareData,
@@ -27,7 +26,7 @@ const log = debug('page-loader');
 
 export default (dirPath, link) => {
   axiosDebug(axiosDebugConfig);
-  let allUrls;
+  let resourcesUrls;
   let modifiedData;
   const htmlFileName = buildFileNameFromUrl(link, '.html');
   const filesDirName = buildFileNameFromUrl(link, '_files');
@@ -39,44 +38,35 @@ export default (dirPath, link) => {
   log(`htmlFilePath: ${htmlFilePath}`);
   log(`filesDirPath: ${filesDirPath}`);
 
-  const prepareTaskData = (url) => {
+  const buildPromises = (url) => {
     const { pathname } = new URL(url);
     const filePath = path.join(filesDirPath, pathname);
     const { dir } = path.parse(filePath);
-    return { url, filePath, dir };
-  };
-
-  const buildTask = ({ url, filePath, dir }) => {
     let resourceData;
-    return ({
-      title: url,
-      task: () => axios
-        .get(url, { responseType: 'arraybuffer' })
-        .then(({ data }) => {
-          resourceData = data;
-          return fs.mkdir(dir, { recursive: true });
-        })
-        .then(() => fs.writeFile(filePath, resourceData))
-        .catch((e) => Promise.reject(e)),
-    });
+    return () => axios
+      .get(url, { responseType: 'arraybuffer' })
+      .then(({ data }) => {
+        resourceData = data;
+        return fs.mkdir(dir, { recursive: true });
+      })
+      .then(() => fs.writeFile(filePath, resourceData));
   };
 
   return fs.stat(dirPath)
     .then(() => axios.get(link))
     .then(({ data }) => {
       modifiedData = prepareData(data, filesDirName, link);
-      allUrls = modifiedData.links;
+      resourcesUrls = modifiedData.links;
+      log(`all remote urls:\n${resourcesUrls.join('\n')}`);
       return fs.writeFile(htmlFilePath, modifiedData.html);
     })
 
-    .then(() => {
-      log(`all remote urls:\n${allUrls.join('\n')}`);
-      const tasks = allUrls
-        .map(prepareTaskData)
-        .map(buildTask);
-      return new Listr(tasks, { concurrent: true, exitOnError: false })
-        .run();
-    })
+    .then(() => resourcesUrls.map(buildPromises))
 
-    .then(() => ({ path: htmlFilePath, data: modifiedData.html }));
+    .then((promises) => ({
+      path: htmlFilePath,
+      data: modifiedData.html,
+      promises,
+      resourcesUrls,
+    }));
 };
