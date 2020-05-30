@@ -2,6 +2,7 @@ import debug from 'debug';
 import axios from 'axios';
 import { promises as fs } from 'fs';
 import path from 'path';
+import Listr from 'listr';
 import axiosDebug from 'axios-debug-log';
 import {
   buildFileNameFromUrl, prepareData,
@@ -26,7 +27,7 @@ const log = debug('page-loader');
 
 export default (dirPath, link) => {
   axiosDebug(axiosDebugConfig);
-  let resourcesUrls;
+  let allUrls;
   let modifiedData;
   const htmlFileName = buildFileNameFromUrl(link, '.html');
   const filesDirName = buildFileNameFromUrl(link, '_files');
@@ -43,7 +44,7 @@ export default (dirPath, link) => {
     const filePath = path.join(filesDirPath, pathname);
     const { dir } = path.parse(filePath);
     let resourceData;
-    return () => axios
+    return axios
       .get(url, { responseType: 'arraybuffer' })
       .then(({ data }) => {
         resourceData = data;
@@ -52,21 +53,27 @@ export default (dirPath, link) => {
       .then(() => fs.writeFile(filePath, resourceData));
   };
 
+  const buildTask = (task, i) => ({
+    task: () => task,
+    title: allUrls[i],
+  });
+
   return fs.stat(dirPath)
     .then(() => axios.get(link))
     .then(({ data }) => {
       modifiedData = prepareData(data, filesDirName, link);
-      resourcesUrls = modifiedData.links;
-      log(`all remote urls:\n${resourcesUrls.join('\n')}`);
+      allUrls = modifiedData.links;
       return fs.writeFile(htmlFilePath, modifiedData.html);
     })
 
-    .then(() => resourcesUrls.map(buildPromises))
+    .then(() => {
+      log(`all remote urls:\n${allUrls.join('\n')}`);
+      const tasks = allUrls
+        .map(buildPromises)
+        .map(buildTask);
+      return new Listr(tasks, { concurrent: true, exitOnError: false })
+        .run();
+    })
 
-    .then((promises) => ({
-      path: htmlFilePath,
-      data: modifiedData.html,
-      promises,
-      resourcesUrls,
-    }));
+    .then(() => ({ path: htmlFilePath, data: modifiedData.html }));
 };

@@ -53,20 +53,19 @@ test('page-loader should successfully load the https://frontend-project-lvl3-gam
   await expect(data.trim()).toBe(expected.trim());
 });
 
-test('page-loader should load https://frontend-project-lvl3-gamma.now.sh with unavaiable resources', async () => {
-  resourcesPaths.forEach((path) => {
-    scope
-      .get(path)
-      .reply(404)
-  });
-
-  expect(async () => {
-    const {data} = await loadPage(dirpath, link);
-    expect(data.trim()).toBe(expected.trim());
-  });
-});
-
 describe('errors', () => {
+  test('page-loader should load https://frontend-project-lvl3-gamma.now.sh with listr error', async () => {
+    resourcesPaths.forEach((path) => {
+      scope
+        .get(path)
+        .reply(404)
+    });
+
+    expect(async () => {
+        const {data} = await loadPage(dirpath, link);
+        expect(data.trim()).toBe(expected.trim());
+      }).rejects.toThrow('Something went wrong');
+  });
 
   test('page-loader should fail and show ENOENT error', async () => {
     await expect(loadPage('/wrong/path', link)).rejects.toThrow('ENOENT');
