@@ -39,7 +39,7 @@ export default (dirPath, link) => {
   log(`htmlFilePath: ${htmlFilePath}`);
   log(`filesDirPath: ${filesDirPath}`);
 
-  const buildPromises = (url) => {
+  const buildPromise = (url) => {
     const { pathname } = new URL(url);
     const filePath = path.join(filesDirPath, pathname);
     const { dir } = path.parse(filePath);
@@ -53,8 +53,8 @@ export default (dirPath, link) => {
       .then(() => fs.writeFile(filePath, resourceData));
   };
 
-  const buildTask = (task, i) => ({
-    task: () => task,
+  const buildTask = (promise, i) => ({
+    task: () => promise,
     title: allUrls[i],
   });
 
@@ -69,7 +69,7 @@ export default (dirPath, link) => {
     .then(() => {
       log(`all remote urls:\n${allUrls.join('\n')}`);
       const tasks = allUrls
-        .map(buildPromises)
+        .map(buildPromise)
         .map(buildTask);
       return new Listr(tasks, { concurrent: true, exitOnError: false })
         .run();
